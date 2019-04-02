@@ -1,5 +1,6 @@
 package com.jaydev.coroutinesample.room
 
+import android.content.Context
 import androidx.room.*
 
 
@@ -11,27 +12,32 @@ data class Data(val title: String, val description: String) {
 
 @Dao
 interface DataDao {
-    @Query("SELECT * FROM dataTable WHERE userId = :userId")
-    fun getReadNotices(userId: String): List<ReadNotice>
-
-    @Query("SELECT * FROM dataTable WHERE userId = :userId AND noticeId = :noticeId")
-    fun getReadNotice(userId: String, noticeId: Int): ReadNotice?
-
-    @Query("UPDATE dataTable SET readState = :readState WHERE noticeId = :noticeId AND userId = :userId")
-    fun updateReadNotice(userId: String, noticeId: Int, readState: Boolean)
-
-    @Query("SELECT dataTable FROM readNotice WHERE userId = :userId AND noticeId = :noticeId")
-    fun isRead(userId: String, noticeId: Int): Boolean?
+    @Query("SELECT * FROM dataTable")
+    fun getDataList(userId: String): List<Data>
 
     @Insert
-    fun insertAll(noticeList: List<ReadNotice>)
+    fun insertAll(noticeList: List<Data>)
+}
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insert(notice: ReadNotice): Long
 
-    @Update(onConflict = OnConflictStrategy.REPLACE)
-    fun update(notice: ReadNotice)
+@Database(entities = [Data::class], version = 1)
+abstract class DataBase : RoomDatabase() {
 
-    @Query("DELETE FROM readNotice WHERE userId = :userId")
-    fun clear(userId: String)
+    abstract fun dataDao(): DataDao
+
+
+    companion object {
+        private var INSTANCE: DataBase? = null
+
+        private val lock = Any()
+
+        fun getInstance(context: Context): DataBase {
+            synchronized(lock) {
+                if (INSTANCE == null) {
+                    INSTANCE = Room.databaseBuilder(context.applicationContext, DataBase::class.java, "Data.db").build()
+                }
+                return INSTANCE!!
+            }
+        }
+    }
 }
