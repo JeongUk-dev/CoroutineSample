@@ -9,9 +9,8 @@ import com.jaydev.coroutinesample.room.DataBase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
-class ScopeActivity:AppCompatActivity() {
+class ScopeActivity : AppCompatActivity() {
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
@@ -23,18 +22,15 @@ class ScopeActivity:AppCompatActivity() {
 				CoroutineScope(Dispatchers.Main).launch {
 					work.generateDataWithInsert()
 
-					val dao = DataBase.getInstance(this@ScopeActivity).dataDao()
+					val list = work.getDataList()
 
-					val string = withContext(Dispatchers.IO) {
-						val list = dao.getDataList()
+					val stringBuilder = StringBuilder()
+					list?.forEach { stringBuilder.appendln("${it.title}, ${it.description}") }
 
-						val stringBuilder = StringBuilder()
-						list.forEach { stringBuilder.appendln("${it.title}, ${it.description}") }
-
-						stringBuilder.toString()
-					}
-					textView.text = string
+					textView.text = stringBuilder.toString()
 				}
+
+
 			}
 		}
 	}
